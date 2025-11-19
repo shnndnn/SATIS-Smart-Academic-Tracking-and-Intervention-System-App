@@ -1,21 +1,15 @@
-{
-  "web": {
-    "bundler": "metro"
-  },
-  "scheme": "your-app-scheme",
+require('dotenv').config();
+
+export default {
   "expo": {
-    "extra": {
-      "API_URL": "http://172.23.193.104:8000"
-    },
-    "name": "SATIS-APP",
-    "slug": "SATIS-APP",
+    "name": "satis-app",
+    "slug": "satis-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -26,12 +20,13 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-secure-store"]
+    "extra": {
+      "API_URL": process.env.APP_URL
+    }
   }
-}
+};
