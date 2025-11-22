@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,11 +7,38 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  ImageBackground,
+  Animated,
+  Dimensions,
 } from "react-native";
+import school from '../../assets/school.jpg';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function Home() {
+  const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMounted, setDrawerMounted] = useState(false);
+  const width = Dimensions.get('window').width;
+  const translateX = useRef(new Animated.Value(-width * 0.8)).current;
+
+  useEffect(() => {
+    if (drawerOpen) {
+      setDrawerMounted(true);
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 260,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(translateX, {
+        toValue: -width * 0.8,
+        duration: 220,
+        useNativeDriver: true,
+      }).start(() => setDrawerMounted(false));
+    }
+  }, [drawerOpen, translateX, width]);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -20,8 +47,8 @@ export default function Home() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity>
-            <Ionicons name="menu" size={32} color="#1f2937" />
+          <TouchableOpacity onPress={() => setDrawerOpen(true)}>
+            <Ionicons name="menu" size={28} color="#1f2937" />
           </TouchableOpacity>
           <View style={styles.profileSection}>
             <View style={styles.profileImage}>
@@ -56,11 +83,40 @@ export default function Home() {
         </View>
 
         {/* Welcome Card */}
-        <View style={styles.welcomeCard}>
-          <Text style={styles.welcomeTitle}>Welcome Back, Sheena!</Text>
-          <Text style={styles.welcomeSubtitle}>Lorem Ipsum</Text>
-        </View>
+        <ImageBackground source={require('../../assets/school.jpg')} style={styles.welcomeCard}>
+          <View style={styles.welcomeOverlay}>
+            <Text style={styles.welcomeTitle}>Welcome Back, Sheena!</Text>
+            <Text style={styles.welcomeSubtitle}>Lorem Ipsum</Text>
+          </View>
+        </ImageBackground>
 
+        {/* Drawer overlay */}
+        {drawerMounted && (
+          <>
+            <TouchableOpacity style={styles.drawerBackdrop} onPress={() => setDrawerOpen(false)} />
+            <Animated.View style={[styles.drawer, { transform: [{ translateX }] }] }>
+              <Text style={styles.drawerTitle}>Menu</Text>
+              <TouchableOpacity
+                style={styles.drawerItem}
+                onPress={() => {
+                  setDrawerOpen(false);
+                  router.push('/Screens/Aboutscreen');
+                }}
+              >
+                <Text style={styles.drawerItemText}>About Us</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.drawerItem}
+                onPress={() => {
+                  setDrawerOpen(false);
+                  router.push('/Screens/Settings');
+                }}
+              >
+                <Text style={styles.drawerItemText}>Settings</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </>
+        )}
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
@@ -180,23 +236,26 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 13,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 15,
+    paddingHorizontal: 16,
   },
   profileSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+  
   },
   profileImage: {
     width: 48,
     height: 48,
     borderRadius: 24,
+    marginRight: 10,
     backgroundColor: "#374151",
     overflow: "hidden",
   },
@@ -231,24 +290,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#1f2937",
   },
+    drawerBackdrop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      zIndex: 40,
+    },
+    drawer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      width: '80%',
+      backgroundColor: '#f3f4f6',
+      paddingTop: 60,
+      paddingHorizontal: 16,
+      elevation: 12,
+      zIndex: 50,
+      shadowColor: '#000',
+      shadowOpacity: 0.3,
+      shadowOffset: { width: 2, height: 0 },
+      shadowRadius: 8,
+    },
+    drawerTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 12,
+    },
+    drawerItem: {
+      paddingVertical: 12,
+    },
+    drawerItemText: {
+      fontSize: 16,
+    },
   bellIcon: {
     marginLeft: 8,
   },
   welcomeCard: {
-    backgroundColor: "white",
     borderRadius: 24,
-    padding: 24,
+    padding: 10,
     marginBottom: 16,
+    overflow: 'hidden',
+    minHeight: 100,
   },
+  welcomeOverlay: {
+    padding: 16,
+    borderRadius: 12,
+  }, 
   welcomeTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 4,
+    color: "#000000ff",
+    marginBottom: 8,
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: "#6b7280",
+    color: "#000000ff",
   },
   statsGrid: {
     flexDirection: "row",
