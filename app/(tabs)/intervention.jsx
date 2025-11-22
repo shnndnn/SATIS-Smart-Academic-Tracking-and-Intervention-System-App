@@ -1,20 +1,39 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  TouchableOpacity, 
-  Modal, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
   TextInput,
   Alert,
-  StyleSheet, 
-  Image
+  StyleSheet,
+  Image,
+  Animated,
+  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bell, Menu, Mail, Calendar, X, Check } from 'lucide-react-native';
+import { Bell, Mail, Calendar, X, Check } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router';
 
 const Intervention = () => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMounted, setDrawerMounted] = useState(false);
+  const width = Dimensions.get('window').width;
+  const translateX = useRef(new Animated.Value(-width * 0.8)).current;
+
+  useEffect(() => {
+    if (drawerOpen) {
+      setDrawerMounted(true);
+      Animated.timing(translateX, { toValue: 0, duration: 260, useNativeDriver: true }).start();
+    } else {
+      Animated.timing(translateX, { toValue: -width * 0.8, duration: 220, useNativeDriver: true }).start(() => setDrawerMounted(false));
+    }
+  }, [drawerOpen, translateX, width]);
+
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [selectedTeachers, setSelectedTeachers] = useState([]);
@@ -131,17 +150,19 @@ const Intervention = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Menu size={24} color="#000" />
+        <TouchableOpacity onPress={() => setDrawerOpen(true)}>
+          <Ionicons name="menu" size={28} color="#111" />
         </TouchableOpacity>
-        <View style={styles.headerRight}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/48" }}
-            style={styles.avatar}
-          />
-          <View style={styles.gradebadge}>
-            <Text style={styles.gradeBadgeText}>Grade 12</Text>
-            <Text style={styles.gradeBadgeSubtext}>STEM</Text>
+        <View style={styles.profileSection}>
+          <View style={styles.profileImage}>
+            <Image
+              source={{ uri: "https://via.placeholder.com/48" }}
+              style={styles.avatar}
+            />
+          </View>
+          <View>
+            <Text style={styles.grade}>Grade 12</Text>
+            <Text style={styles.stream}>STEM</Text>
           </View>
         </View>
       </View>
@@ -386,6 +407,28 @@ const Intervention = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Drawer overlay */}
+      {drawerMounted && (
+        <>
+          <TouchableOpacity style={styles.drawerBackdrop} onPress={() => setDrawerOpen(false)} />
+          <Animated.View style={[styles.drawer, { transform: [{ translateX }] }] }>
+            <Text style={styles.drawerTitle}>Menu</Text>
+            <TouchableOpacity
+              style={styles.drawerItem}
+              onPress={() => { setDrawerOpen(false); router.push('/Screens/Aboutscreen'); }}
+            >
+              <Text style={styles.drawerItemText}>About Us</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.drawerItem}
+              onPress={() => { setDrawerOpen(false); router.push('/Screens/Settings'); }}
+            >
+              <Text style={styles.drawerItemText}>Settings</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </>
+      )}
     </View>
     
   );
@@ -401,19 +444,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#F5F5F5',
+    paddingVertical: 15,
+    paddingHorizontal: 16,
   },
-  headerRight: {
+  profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  avatar: {
+  profileImage: {
     width: 48,
     height: 48,
     borderRadius: 24,
+    marginRight: 10,
+    backgroundColor: '#374151',
+    overflow: 'hidden',
+  },
+  avatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
     backgroundColor: '#E0E0E0',
+  },
+  grade: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  stream: {
+    fontSize: 10,
+    color: '#374151',
   },
   gradebadge: {
     borderRadius: 12,
@@ -698,6 +758,38 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  drawerBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    zIndex: 40,
+  },
+  drawer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: '80%',
+    backgroundColor: '#f3f4f6',
+    paddingTop: 60,
+    paddingHorizontal: 16,
+    elevation: 12,
+    zIndex: 50,
+  },
+  drawerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  drawerItem: {
+    paddingVertical: 12,
+  },
+  drawerItemText: {
+    fontSize: 16,
   },
 });
 
